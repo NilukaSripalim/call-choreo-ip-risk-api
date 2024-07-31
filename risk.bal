@@ -22,7 +22,6 @@ type RiskResponse record {
     Name name;
     string userName;
     string correlationID;
-    boolean hasRisk;
 };
 
 configurable string geoApiKey = ?;
