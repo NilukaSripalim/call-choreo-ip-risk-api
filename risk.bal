@@ -28,8 +28,8 @@ type RiskRequest record {
 configurable string geoApiKey = ?;
 
 service / on new http:Listener(8090) {
-    resource function post risk(@http:Payload RiskRequest req) returns error? {
-    //resource function post echoUserPayload(http:Caller caller, http:Request request) returns error? {
+    //resource function post risk(@http:Payload RiskRequest req) returns error? {
+    resource function post echorisk(http:Caller caller, http:Request req) returns error? {
 
         // Process the request data here
         // Simplified risk determination based on example logic
