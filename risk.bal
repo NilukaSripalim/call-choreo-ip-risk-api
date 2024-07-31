@@ -28,7 +28,8 @@ type RiskResponse record {
 configurable string geoApiKey = ?;
 
 service / on new http:Listener(8090) {
-    resource function post risk(@http:Payload RiskRequest req) returns RiskResponse|error? {
+    resource function post risk(@http:Payload RiskRequest req) returns error? {
+    //resource function post echoUserPayload(http:Caller caller, http:Request request) returns error? {
 
         // Process the request data here
         // Simplified risk determination based on example logic
@@ -38,13 +39,6 @@ service / on new http:Listener(8090) {
         // Log the received JSON payload (optional for debugging purposes)
         log:printInfo("Received JSON Payload: " + jsonString);
 
-        RiskResponse resp = {
-            email: req.email,
-            name: req.name,
-            userName: req.userName,
-            correlationID: req.correlationID  
-        };
-
-        return resp;
+        
     }
 }
