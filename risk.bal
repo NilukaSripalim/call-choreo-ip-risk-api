@@ -37,8 +37,7 @@ service / on new http:Listener(8090) {
             email: req.email,
             name: req.name,
             userName: req.userName,
-            correlationID: req.correlationID,
-            
+            correlationID: req.correlationID  
         };
 
         return resp;
