@@ -18,12 +18,12 @@ type RiskRequest record {
     string correlationID;
 };
 
-type RiskResponse record {
-    Email email;
-    Name name;
-    string userName;
-    string correlationID;
-};
+//type RiskResponse record {
+  //  Email email;
+  //  Name name;
+   // string userName;
+   // string correlationID;
+//};
 
 configurable string geoApiKey = ?;
 
