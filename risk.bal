@@ -1,4 +1,5 @@
 import ballerina/http;
+import ballerina/log;
 
 type Email record {
     string value;
