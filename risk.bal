@@ -46,6 +46,7 @@
 
 import ballerina/http;
 import ballerina/log;
+
 type RiskResponse record {
     boolean hasRisk;
 };
