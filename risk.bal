@@ -1,24 +1,24 @@
-/**
-import ballerina/http;
-import ballerina/log;
 
-type Email record {
-    string value;
-    boolean primary;
-};
+//import ballerina/http;
+//import ballerina/log;
 
-type Name record {
-    string givenName;
-    string familyName;
-};
+//type Email record {
+   // string value;
+  //  boolean primary;
+//};
 
-type RiskRequest record {
-    Email email;
-    Name name;
-    string userName;
-    string correlationID;
-};
-*/
+//type Name record {
+ //   string givenName;
+   // string familyName;
+//};
+
+//type RiskRequest record {
+ //   Email email;
+//    Name name;
+ //   string userName;
+//    string correlationID;
+//};
+
 //type RiskResponse record {
   //  Email email;
   //  Name name;
