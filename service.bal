@@ -8,17 +8,23 @@ configurable string clientSecret = ?; // Client Secret
 // Combine scopes into a single space-separated string
 final string asgardeoScopesString = "internal_user_mgt_view internal_user_mgt_list internal_user_mgt_create internal_user_mgt_delete internal_user_mgt_update";
 
+// Define a token URL for authorization
+final string tokenUrl = "https://api.asgardeo.io/t/wso2externalstg/oauth2/token";
+
+// Construct the ClientAuthConfig using configurable variables
+configurable string asgardeoClientConfig = string`{
+    "tokenUrl": "https://api.asgardeo.io/t/orgniluka0617newruntime/oauth2/token",
+    "clientId": "${clientId}",
+    "clientSecret": "${clientSecret}",
+    "scopes": "${asgardeoScopesString}"
+}`;
+
 @display {
     label: "Asgardeo Client",
     id: "asgardeo/client"
 }
 final http:Client asgardeoClient = check new (asgardeoUrl, {
-    auth: {
-        tokenUrl: "https://api.asgardeo.io/t/orgniluka0617newruntime/oauth2/token",
-        clientId: clientId,
-        clientSecret: clientSecret,
-        scopes: asgardeoScopesString
-    }
+    auth: check asgardeoClientConfig.fromJSON()
 });
 
 # Checks the health of the Asgardeo server. Uses Asgardeo SCIM 2.0 API.
