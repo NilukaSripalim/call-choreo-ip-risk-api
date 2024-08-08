@@ -64,7 +64,7 @@ public function main() returns error? {
     // Define user data with provided payload
     json newUser = {
         "email": {
-            "value": "test1@test.com",
+            "value": "callchoreo@test.com",
             "primary": true
         },
         "name": {
