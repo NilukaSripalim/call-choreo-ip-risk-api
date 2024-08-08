@@ -1,18 +1,12 @@
 import ballerina/http;
 import ballerina/log;
 
-configurable OAuth2App asgardeoAppConfig = {
-    tokenUrl: "https://api.asgardeo.io/t/orgniluka0617newruntime/oauth2/token",
-    clientId: "vtcc7Rf2TRYfbLx2gIgyEQUB8OMa",
-    clientSecret: "csXh0Y2GRdzziSUpDS1JlCCbWyUszC2oRVuMt5Iwbb8a"
-};
-final string asgardeoScopesString = string:'join(" ", [
-    "internal_user_mgt_view",
-    "internal_user_mgt_list",
-    "internal_user_mgt_create",
-    "internal_user_mgt_delete",
-    "internal_user_mgt_update"
-]);
+configurable string asgardeoUrl = ?; // Base URL for Asgardeo API
+configurable string clientId = ?; // Client ID
+configurable string clientSecret = ?; // Client Secret
+
+// Combine scopes into a single space-separated string
+final string asgardeoScopesString = "internal_user_mgt_view internal_user_mgt_list internal_user_mgt_create internal_user_mgt_delete internal_user_mgt_update";
 
 @display {
     label: "Asgardeo Client",
@@ -20,7 +14,9 @@ final string asgardeoScopesString = string:'join(" ", [
 }
 final http:Client asgardeoClient = check new (asgardeoUrl, {
     auth: {
-        ...asgardeoAppConfig,
+        tokenUrl: "https://api.asgardeo.io/t/orgniluka0617newruntime/oauth2/token",
+        clientId: clientId,
+        clientSecret: clientSecret,
         scopes: asgardeoScopesString
     }
 });
@@ -64,7 +60,7 @@ public function main() returns error? {
     // Define user data with provided payload
     json newUser = {
         "email": {
-            "value": "callchoreo@test.com",
+            "value": "test1@test.com",
             "primary": true
         },
         "name": {
