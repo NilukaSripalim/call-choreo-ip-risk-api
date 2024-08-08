@@ -19,9 +19,10 @@ final http:Client asgardeoClient = check new (asgardeoUrl, {
 # Checks the health of the Asgardeo server. Uses Asgardeo SCIM 2.0 API.
 isolated function checkAsgardeoHealth() returns error? {
     http:Response response = check asgardeoClient->/scim2/ServiceProviderConfig.get();
-    if response.statusCode != http:STATUS_OK {
-        return error("Asgardeo server is not reachable.");
+    if (response.statusCode != http:STATUS_OK) {
+        return error("Asgardeo server is not reachable. Status code: " + response.statusCode.toString());
     }
+    return ();
 }
 
 # Creates a user in the Asgardeo user store. Uses Asgardeo SCIM 2.0 API.
@@ -40,8 +41,8 @@ isolated function createAsgardeoUser() returns json|error {
     };
 
     http:Response response = check asgardeoClient->/scim2/Users.post(userPayload);
-    if response.statusCode != http:STATUS_CREATED {
-        log:printError("Error while creating user.", response);
+    if (response.statusCode != http:STATUS_CREATED) {
+        log:printError("Error while creating user. Status code: " + response.statusCode.toString(), response);
         return error("Error while creating user.");
     }
     return check response.getJsonPayload();
