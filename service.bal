@@ -4,8 +4,7 @@ import ballerina/log;
 configurable string asgardeoUrl = ?;
 configurable string clientId = ?;
 configurable string clientSecret = ?;
-
-final string asgardeoScopesString = "internal_user_mgt_view internal_user_mgt_list internal_user_mgt_create internal_user_mgt_delete internal_user_mgt_update";
+configurable string asgardeoScopesString = "internal_user_mgt_view internal_user_mgt_list internal_user_mgt_create internal_user_mgt_delete internal_user_mgt_update";
 
 final http:Client asgardeoClient = check new (asgardeoUrl, {
     auth: {
@@ -16,7 +15,6 @@ final http:Client asgardeoClient = check new (asgardeoUrl, {
     }
 });
 
-# Checks the health of the Asgardeo server. Uses Asgardeo SCIM 2.0 API.
 isolated function checkAsgardeoHealth() returns error? {
     http:Response response = check asgardeoClient->/scim2/ServiceProviderConfig.get();
     if (response.statusCode != http:STATUS_OK) {
@@ -25,7 +23,6 @@ isolated function checkAsgardeoHealth() returns error? {
     return ();
 }
 
-# Creates a user in the Asgardeo user store. Uses Asgardeo SCIM 2.0 API.
 isolated function createAsgardeoUser() returns json|error {
     json userPayload = {
         "email": {
@@ -42,6 +39,7 @@ isolated function createAsgardeoUser() returns json|error {
 
     http:Response response = check asgardeoClient->/scim2/Users.post(userPayload);
     if (response.statusCode != http:STATUS_CREATED) {
+        json|error jsonPayload = response.getJsonPayload();
         log:printError("Error while creating user. Status code: " + response.statusCode.toString(), response);
         return error("Error while creating user.");
     }
