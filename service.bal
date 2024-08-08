@@ -6,11 +6,26 @@ configurable string clientId = ?;
 configurable string clientSecret = ?;
 configurable string asgardeoScopesString = "internal_user_mgt_view internal_user_mgt_list internal_user_mgt_create internal_user_mgt_delete internal_user_mgt_update";
 
+// Define the OAuth2App record with appropriate fields
+type OAuth2App record {
+    string tokenUrl;
+    string clientId;
+    string clientSecret;
+};
+
+// Create the OAuth2App instance using configurable variables
+configurable OAuth2App asgardeoAppConfig = {
+    tokenUrl: "https://api.asgardeo.io/t/orgniluka0617newruntime/oauth2/token",
+    clientId: clientId,
+    clientSecret: clientSecret
+};
+
+// Define the ClientAuthConfig using the OAuth2App fields
 final http:Client asgardeoClient = check new (asgardeoUrl, {
     auth: {
-        tokenUrl: "https://api.asgardeo.io/t/orgniluka0617newruntime/oauth2/token",
-        clientId: clientId,
-        clientSecret: clientSecret,
+        tokenUrl: asgardeoAppConfig.tokenUrl,
+        clientId: asgardeoAppConfig.clientId,
+        clientSecret: asgardeoAppConfig.clientSecret,
         scopes: asgardeoScopesString
     }
 });
