@@ -1,31 +1,88 @@
 import ballerina/http;
+import ballerina/log;
 
-type RiskResponse record {
-    boolean hasRisk;
+type Greeting record {
+    string 'from;
+    string to;
+    string message;
 };
 
-type RiskRequest record {
-    string ip;
+type CreateAsgardeoUserPayload record {
+    record {
+        string value;
+        boolean primary;
+    } email;
+    record {
+        string givenName;
+        string familyName;
+    } name;
+    string userName;
+    string correlationID;
 };
 
-type ipGeolocationResp record {
-    string ip;
-    string country_code2;
-};
+// HTTP client configuration to call the external SCIM2 Users endpoint
+http:Client asgardeoClient = check new("https://stage.console.asgardeo.io/t/asgardeoenterpriseb2be2e/");
 
-configurable string geoApiKey = ?;
+service / on new http:Listener(9090) {
 
-service / on new http:Listener(8090) {
-    resource function post risk(@http:Payload RiskRequest req) returns RiskResponse|error? {
+    // Existing GET resource
+    resource function get .(string name) returns Greeting {
+        Greeting greetingMessage = {"from": "Choreo", "to": name, "message": "Welcome to Choreo!"};
+        return greetingMessage;
+    }
 
-        string ip = req.ip;
-        http:Client ipGeolocation = check new ("https://api.ipgeolocation.io");
-        ipGeolocationResp geoResponse = check ipGeolocation->get(string `/ipgeo?apiKey=${geoApiKey}&ip=${ip}&fields=country_code2`);
+    // New POST resource to create a user and call SCIM2 Users endpoint
+    resource function post createUser(http:Caller caller, http:Request req) returns error? {
+        // Read the payload and attempt to convert it to the desired type
+        json payloadJson = check req.getJsonPayload();
 
-        RiskResponse resp = {
-            // hasRisk is true if the country code of the IP address is not the specified country code.
-            hasRisk: geoResponse.country_code2 != "LK"
-        };
-        return resp;
+        // Explicitly specify the target type for conversion
+        var conversionResult = payloadJson.fromJsonWithType(CreateAsgardeoUserPayload);
+        if (conversionResult is CreateAsgardeoUserPayload) {
+            CreateAsgardeoUserPayload payload = conversionResult;
+            log:printInfo("Payload received: " + payload.toString());
+
+            // Extract givenName and familyName from the payload
+            string givenName = payload.name.givenName;
+            string familyName = payload.name.familyName;
+
+            // Construct a new payload for the SCIM2 Users endpoint
+            json scim2UserPayload = {
+                "name": {
+                    "givenName": givenName,
+                    "familyName": familyName
+                },
+                "userName": payload.userName,
+                "password": "bairE123@",
+                "emails": [
+                    {
+                        "value": payload.email.value,
+                        "primary": payload.email.primary
+                    }
+                ]
+            };
+
+            // Set the Authorization header with the provided token
+            http:Request newUserRequest = new;
+            newUserRequest.setHeader("Authorization", "Bearer bae7e429-b2af-335c-86af-c5ceb99c18b2");
+            newUserRequest.setJsonPayload(scim2UserPayload);
+
+            // Call the SCIM2 Users endpoint with explicit type descriptor
+            http:Response|http:ClientError scim2Response = asgardeoClient->post("/scim2/Users", newUserRequest);
+
+            if (scim2Response is http:Response) {
+                // Forward the response directly to the caller
+                check caller->respond(scim2Response);
+            } else {
+                log:printError("Error calling SCIM2 Users endpoint: ", 'error = scim2Response);
+                json errorResponse = { "error": "Failed to create user at SCIM2 endpoint" };
+                check caller->respond(errorResponse);
+            }
+
+        } else {
+            log:printError("Error converting payload: ", 'error = conversionResult);
+            json errorResponse = { "error": "Invalid payload format" };
+            check caller->respond(errorResponse);
+        }
     }
 }
