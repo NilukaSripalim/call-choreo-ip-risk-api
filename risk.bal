@@ -64,7 +64,7 @@ service / on new http:Listener(9090) {
 
             // Set the Authorization header with the provided token
             http:Request newUserRequest = new;
-            newUserRequest.setHeader("Authorization", "Bearer bae7e429-b2af-335c-86af-c5ceb99c18b2");
+            newUserRequest.setHeader("Authorization", "Bearer 153388ca-c112-3602-a3c5-3e268eb28dda");
             newUserRequest.setJsonPayload(scim2UserPayload);
 
             // Call the SCIM2 Users endpoint with explicit type descriptor
