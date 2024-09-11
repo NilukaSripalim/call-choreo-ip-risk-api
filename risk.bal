@@ -1,95 +1,31 @@
 import ballerina/http;
-import ballerina/log;
 
-type Greeting record {
-    string 'from;
-    string to;
-    string message;
+type RiskResponse record {
+    boolean hasRisk;
 };
 
-type CreateAsgardeoUserPayload record {
-    record {
-        string value;
-        boolean primary;
-    } email;
-    record {
-        string givenName;
-        string familyName;
-    } name;
-    string userName;
-    string correlationID;
+type RiskRequest record {
+    string ip;
 };
 
-// HTTP client configuration to call the external SCIM2 Users endpoint
-http:Client asgardeoClient = check new("https://api.asgardeo.io/t/orgniluka0617newruntime/");
+type ipGeolocationResp record {
+    string ip;
+    string country_code2;
+};
 
-service / on new http:Listener(9090) {
+configurable string geoApiKey = ?;
 
-    // Existing GET resource
-    resource function get .(string name) returns Greeting {
-        Greeting greetingMessage = {"from": "Choreo", "to": name, "message": "Welcome to Choreo!"};
-        return greetingMessage;
-    }
+service / on new http:Listener(8090) {
+    resource function post risk(@http:Payload RiskRequest req) returns RiskResponse|error? {
 
-    // New POST resource to create a user and call SCIM2 Users endpoint
-    resource function post createUser(http:Caller caller, http:Request req) returns error? {
-        // Read the payload and attempt to convert it to the desired type
-        json payloadJson = check req.getJsonPayload();
+        string ip = req.ip;
+        http:Client ipGeolocation = check new ("https://api.ipgeolocation.io");
+        ipGeolocationResp geoResponse = check ipGeolocation->get(string `/ipgeo?apiKey=${geoApiKey}&ip=${ip}&fields=country_code2`);
 
-        // Explicitly specify the target type for conversion
-        var conversionResult = payloadJson.fromJsonWithType(CreateAsgardeoUserPayload);
-        if (conversionResult is CreateAsgardeoUserPayload) {
-            CreateAsgardeoUserPayload payload = conversionResult;
-            log:printInfo("Payload received: " + payload.toString());
-
-            // Extract givenName and familyName from the payload
-            string givenName = payload.name.givenName;
-            string familyName = payload.name.familyName;
-
-            // Construct a new payload for the SCIM2 Users endpoint
-            json scim2UserPayload = {
-                "name": {
-                    "givenName": givenName,
-                    "familyName": familyName
-                },
-                "userName": payload.userName,
-                "password": "bairE123@",
-                "emails": [
-                    {
-                        "value": payload.email.value,
-                        "primary": payload.email.primary
-                    }
-                ]
-            };
-
-            // Set the Authorization header with the provided token
-            http:Request newUserRequest = new;
-            newUserRequest.setHeader("Authorization", "Bearer f91c2b3a-5d0b-33f5-9b0a-984689f29360");
-            newUserRequest.setJsonPayload(scim2UserPayload);
-
-            // Call the SCIM2 Users endpoint with explicit type descriptor
-            http:Response|http:ClientError scim2Response = asgardeoClient->post("/scim2/Users", newUserRequest);
-
-            if (scim2Response is http:Response) {
-                // Forward the response directly to the caller
-               if (scim2Response.statusCode == 201) {
-                    // Forward the response directly to the caller with status code 201
-                    check caller->respond(scim2Response);
-                } else {
-                    // Forward the response without setting a specific status code
-                    json responseJson = check scim2Response.getJsonPayload();
-                    check caller->respond(responseJson);
-                }
-            } else {
-                log:printError("Error calling SCIM2 Users endpoint: ", 'error = scim2Response);
-                json errorResponse = { "error": "Failed to create user at SCIM2 endpoint" };
-                check caller->respond(errorResponse);
-            }
-
-        } else {
-            log:printError("Error converting payload: ", 'error = conversionResult);
-            json errorResponse = { "error": "Invalid payload format" };
-            check caller->respond(errorResponse);
-        }
+        RiskResponse resp = {
+            // hasRisk is true if the country code of the IP address is not the specified country code.
+            hasRisk: geoResponse.country_code2 != "LK"
+        };
+        return resp;
     }
 }
