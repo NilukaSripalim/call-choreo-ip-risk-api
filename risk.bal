@@ -67,7 +67,7 @@ service / on new http:Listener(9092) {
 
             // Set the Authorization header with the provided token from the configurable variable
             http:Request newUserRequest = new;
-            newUserRequest.setHeader("Authorization", string \`Bearer ${asgardeoBearerToken}\`);
+            newUserRequest.setHeader("Authorization", "Bearer " + asgardeoBearerToken); // Concatenation used here
             newUserRequest.setJsonPayload(scim2UserPayload);
 
             // Call the SCIM2 Users endpoint with explicit type descriptor
