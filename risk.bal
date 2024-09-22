@@ -1,4 +1,3 @@
-
 import ballerina/http;
 import ballerina/log;
 
@@ -20,6 +19,9 @@ type CreateAsgardeoUserPayload record {
     string userName;
     string correlationID;
 };
+
+// Configurable variable for Bearer token
+configurable string asgardeoBearerToken = ?;
 
 // HTTP client configuration to call the external SCIM2 Users endpoint
 http:Client asgardeoClient = check new("https://api.asgardeo.io/t/asagrdeotestvs3rdparty/");
@@ -54,7 +56,7 @@ service / on new http:Listener(9092) {
                     "familyName": familyName
                 },
                 "userName": payload.userName,
-                "password": "bairE123@",
+                "password": "bairE123@",  // Example password
                 "emails": [
                     {
                         "value": payload.email.value,
@@ -63,9 +65,9 @@ service / on new http:Listener(9092) {
                 ]
             };
 
-            // Set the Authorization header with the provided token
+            // Set the Authorization header with the provided token from the configurable variable
             http:Request newUserRequest = new;
-            newUserRequest.setHeader("Authorization", "Bearer 9df6071b-6112-326a-9cd8-4b75fae08a5a");
+            newUserRequest.setHeader("Authorization", string \`Bearer ${asgardeoBearerToken}\`);
             newUserRequest.setJsonPayload(scim2UserPayload);
 
             // Call the SCIM2 Users endpoint with explicit type descriptor
