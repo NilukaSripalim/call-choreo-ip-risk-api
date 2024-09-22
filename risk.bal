@@ -22,7 +22,7 @@ type CreateAsgardeoUserPayload record {
 };
 
 // HTTP client configuration to call the external SCIM2 Users endpoint
-http:Client asgardeoClient = check new("https://stage.console.asgardeo.io/t/asgardeoenterpriseb2be2e/");
+http:Client asgardeoClient = check new("https://stage.console.asgardeo.io/t/asagrdeotestvs3rdparty/");
 
 service / on new http:Listener(9092) {
 
